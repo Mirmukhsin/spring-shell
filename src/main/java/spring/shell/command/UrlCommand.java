@@ -1,7 +1,6 @@
 package spring.shell.command;
 
 import jakarta.validation.ConstraintViolation;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.shell.Availability;
@@ -13,7 +12,7 @@ import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellMethodAvailability;
 import org.springframework.shell.standard.ShellOption;
 import spring.shell.other.CurrentUser;
-import spring.shell.service.PasswordService;
+import spring.shell.service.UrlService;
 import spring.shell.service.UserService;
 
 import java.util.Set;
@@ -21,52 +20,45 @@ import java.util.StringJoiner;
 
 @ShellComponent
 @RequiredArgsConstructor
-public class PasswordCommand {
-    private final PasswordService passwordService;
+public class UrlCommand {
+    private final UrlService urlService;
     private final UserService userService;
     private final CurrentUser currentUser = new CurrentUser();
 
-    @ShellMethod(value = "Add password method", key = "add")
-    public String addPassword(
-            @ShellOption(value = "--ps", help = "[PASSWORD] This can not be empty")@Size(min = 4) String password,
-            @ShellOption(value = "--sN", help = "[SERVICE NAME] This argument can not be empty") String service) {
+    @ShellMethod(value = "Shorten url method", key = "shorten")
+    public String shortenUrl(
+            @ShellOption(value = "--url", help = "[URL] This can not be empty") @Size(min = 4) String url,
+            @ShellOption(value = "--desc", help = "[DESCRIPTION] This argument can not be empty") String description) {
 
-        return passwordService.addPassword(currentUser.getUsername(), password, service);
+        return urlService.shortenUrl(currentUser.getUsername(), url, description);
     }
 
-    @ShellMethod(value = "Get password method", key = "get")
+    @ShellMethod(value = "Get url method", key = "get")
     public String getPassword(
-            @ShellOption(value = "--sN", help = "[SERVICE NAME] This argument can not be empty") String service) {
+            @ShellOption(value = "--desc", help = "[DESCRIPTION] This argument can not be empty") String description) {
 
-        return passwordService.getPassword(currentUser.getUsername(), service);
+        return urlService.getUrl(currentUser.getUsername(), description);
     }
 
-    @ShellMethod(value = "Create password with length method", key = "create")
-    public String createPasswordWithLength(
-            @ShellOption(value = "--ps", help = "[PASSWORD] This argument can not be empty")@Size(min = 8) String password,
-            @ShellOption(value = "--sN", help = "[SERVICE NAME] This argument can not be empty") String service) {
+    @ShellMethod(value = "Delete url method", key = "delete")
+    public String deleteUrl(
+            @ShellOption(value = "--desc", help = "[DESCRIPTION] This argument can not be empty") String description) {
 
-        return passwordService.createPasswordWithLength(currentUser.getUsername(), password, service);
+        return urlService.deleteUrl(description, currentUser.getUsername());
     }
 
-    @ShellMethod(value = "Create strong password method", key = "create-strong")
-    public String createStrongPassword(
-            @ShellOption(value = "--ps", help = "[PASSWORD] This argument can not be empty")@Size(min = 8) String password,
-            @ShellOption(value = "--sN", help = "[SERVICE NAME] This argument can not be empty") String service) {
-        return passwordService.createStrongPassword(currentUser.getUsername(), password, service);
-    }
 
     @ShellMethod(value = "Register method")
     public String register(
             @ShellOption(value = "--u", help = "[USERNAME] This argument can not be empty") String username,
-            @ShellOption(value = "--ps", help = "[PASSWORD] This argument can not be empty")@Size(min = 4) String password) {
+            @ShellOption(value = "--ps", help = "[PASSWORD] This argument can not be empty") @Size(min = 4) String password) {
         return userService.register(username, password);
     }
 
     @ShellMethod(value = "Login method")
     public String login(
             @ShellOption(value = "--u", help = "[USERNAME] This argument can not be empty") String username,
-            @ShellOption(value = "--ps", help = "[PASSWORD] This argument can not be empty")@Size(min = 4) String password) {
+            @ShellOption(value = "--ps", help = "[PASSWORD] This argument can not be empty") @Size(min = 4) String password) {
 
         boolean login = userService.login(username, password);
         if (login) {
@@ -83,7 +75,7 @@ public class PasswordCommand {
         return "Successfully signed out";
     }
 
-    @ShellMethodAvailability({"add", "get", "create", "createPsd", "logout"})
+    @ShellMethodAvailability({"shorten", "get", "delete", "logout"})
     public Availability availabilityForLogin() {
         return currentUser.isLoggedIn() ? Availability.available() : Availability.unavailable("=> Login or Register First");
     }

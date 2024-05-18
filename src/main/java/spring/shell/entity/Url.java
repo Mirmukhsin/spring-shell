@@ -13,11 +13,12 @@ import lombok.*;
 @Builder
 @ToString
 @Entity
-public class Password {
+public class Url {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
-    private String serviceName;
-    private String password;
+    private String url;
+    private String code;
+    private String description;
     private String username;
 }
